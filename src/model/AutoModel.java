@@ -2,6 +2,10 @@ package model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import entidad.Auto;
 import util.MySqlDBConexion;
@@ -44,4 +48,53 @@ public class AutoModel {
 		}
 		return salida;
 	}
+	
+	public List<Auto> listaAuto(String modelo, String marca) {
+		ArrayList<Auto> lista = new ArrayList<Auto>();
+		Connection conn = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		
+		try {
+			conn = MySqlDBConexion.getConexion();
+			String sql = "SELECT * FROM auto "
+	                   + "WHERE modelo LIKE ? "
+	                   + "AND marca LIKE ?";
+			pstm = conn.prepareStatement(sql);
+			pstm.setString(1, "%" + modelo+ "%");
+			pstm.setString(2, "%" + marca + "%");
+			
+			
+			//imprimir el query para verificar que se arma correctamente
+			System.out.println("SQL: " + pstm);
+			
+			//Se ejecuta el query en la base de datos
+			rs = pstm.executeQuery();
+
+			while (rs.next()) {
+				Auto a = new Auto();
+				a.setModelo(rs.getString("modelo"));
+				a.setMarca(rs.getString("marca"));
+				lista.add(a);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (pstm != null)
+					pstm.close();
+				if (conn != null)
+					conn.close();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		
+		return lista;
+	}
+
+	
+		
 }
